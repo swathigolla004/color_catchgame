@@ -530,6 +530,64 @@
       if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') activeKeys.right = false;
     });
 
+    // Mobile touch controls
+    let touchStartX = 0;
+    let touchStartTime = 0;
+    
+    board.addEventListener('touchstart', event => {
+      touchStartX = event.touches[0].clientX;
+      touchStartTime = Date.now();
+    }, false);
+
+    board.addEventListener('touchmove', event => {
+      if (isGameOver) return;
+      const touchX = event.touches[0].clientX;
+      const diffX = touchX - touchStartX;
+      
+      // Move player based on touch position relative to center
+      const boardCenterX = boardRect.left + boardWidth / 2;
+      const touchCenterDiff = touchX - boardCenterX;
+      const moveThreshold = 30;
+      
+      if (touchCenterDiff < -moveThreshold) {
+        activeKeys.left = true;
+        activeKeys.right = false;
+      } else if (touchCenterDiff > moveThreshold) {
+        activeKeys.left = false;
+        activeKeys.right = true;
+      } else {
+        activeKeys.left = false;
+        activeKeys.right = false;
+      }
+      
+      event.preventDefault();
+    }, false);
+
+    board.addEventListener('touchend', event => {
+      activeKeys.left = false;
+      activeKeys.right = false;
+    }, false);
+
+    // Alternative: tap zones (left/right screen halves)
+    document.addEventListener('touchstart', event => {
+      if (isGameOver || !event.target.closest('#game-board')) return;
+      const touch = event.touches[0];
+      const gameLeft = boardRect.left;
+      const gameRight = boardRect.right;
+      const gameCenterX = (gameLeft + gameRight) / 2;
+      
+      if (touch.clientX < gameCenterX) {
+        activeKeys.left = true;
+      } else {
+        activeKeys.right = true;
+      }
+    }, false);
+
+    document.addEventListener('touchend', event => {
+      activeKeys.left = false;
+      activeKeys.right = false;
+    }, false);
+
     restartButton.addEventListener('click', resetGame);
     restartMain.addEventListener('click', resetGame);
 
